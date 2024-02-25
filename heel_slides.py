@@ -418,99 +418,181 @@ def knee_extensions(reps=5,total_sets=1,threshold_angle=140):
     
 
 
-# def squats(reps=5, total_sets=1, threshold_angle=140):
-#     sets = 0
-#     status = None
-#     count = 0
-#     side = "left"
-#     over_extension = False
-#     mistakes = 0
-#     start_time = time.time()
-#     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-#         while cap.isOpened():
-#             ret, frame = cap.read()
-#             frame = cv2.flip(frame, 1)
-#             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#             image.flags.writeable = False
-            
-#             results = pose.process(image)
-            
-#             image.flags.writeable = True
-#             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            
-#             try:
-#                 # Extract landmarks for hips, knees, and heels
-#                 landmarks = results.pose_landmarks.landmark
-#                 hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-#                 knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
-#                 heel = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
-                
-#                 # Calculate angle between hips, knees, and heels
-#                 knee_angle = calculate_angle(hip, knee, heel)
-                
-#                 # Draw semi-circle at knee
-#                 cv2.ellipse(image, tuple(np.multiply(knee, [640, 480]).astype(int)), (80, 80), 0, 180, 360, (255, 0, 0), 2)               
-#                 # Calculate proportion of current angle to threshold angle
-#                 proportion = max(0, min(1, knee_angle / threshold_angle))
-#                 # Calculate radius of filled circle based on proportion
-#                 filled_circle_radius = int(proportion * threshold_angle / 4)
+import cv2
+import mediapipe as mp
+import numpy as np
+import time
 
-#                 # Draw hollow circle at knee with maximum radius
-#                 cv2.circle(image, tuple(np.multiply(knee, [640, 480]).astype(int)), int(threshold_angle / 4), (255, 255, 255), 2)
+mp_pose = mp.solutions.pose
 
-#                 # Draw filled circle at knee with radius proportional to the angle
-#                 if int(threshold_angle / 4) - 5 < filled_circle_radius < int(threshold_angle / 4) + 5:
-#                     cv2.circle(image, tuple(np.multiply(knee, [640, 480]).astype(int)), filled_circle_radius, (0, 255, 0), -1)
-#                 elif filled_circle_radius > int(threshold_angle / 4):
-#                     cv2.circle(image, tuple(np.multiply(knee, [640, 480]).astype(int)), filled_circle_radius, (0, 0, 255), -1)
-#                 else:
-#                     cv2.circle(image, tuple(np.multiply(knee, [640, 480]).astype(int)), filled_circle_radius, (255, 0, 0), -1)
-
-#                 if knee_angle < threshold_angle:
-#                     if status == "Lower":
-#                         count += 1
-#                     status = 'Raise'
-#                     filled_circle_radius = 0
-#                 elif knee_angle >= 170:
-#                     status = 'Lower'
-                    
-#                 if knee_angle >= threshold_angle + 20:
-#                     over_extension = True
-#                     cv2.putText(image, "Do not over extend!", (250, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-#                     if over_extension:
-#                         mistakes += 1
-#                         over_extension = False
-#                     cv2.circle(image, tuple(np.multiply(knee, [640, 480]).astype(int)), int(knee_angle / 4), (0, 0, 255), -1)
-
-#                 if status == 'Raise':
-#                     cv2.putText(image, "Extend!", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-#                 elif status == 'Lower':
-#                     cv2.putText(image, "Contract!", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-
-#                 circle_radius = int(knee_angle / 4)
-                
-#                 cv2.putText(image, f"Count: {count}", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)   
-
-#                 if count < 2 and side == 'right':
-#                     cv2.putText(image, "Set Complete! Time to switch sides!", (200, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-                    
-#                 if count == reps:
-#                     sets += 1
-#                     if sets == total_sets:
-#                         cv2.putText(image, "Workout Complete!", (200, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-#                         elapsed_time = time.time() - start_time
-#                         break
-#             except:
-#                 pass
-#             cv2.imshow('Squats', image)
-            
-#             if cv2.waitKey(10) & 0xFF == ord('q'):
-#                 break
-
-#         cap.release()
-#         cv2.destroyAllWindows()
-#         return 'completed', sets, reps, elapsed_time, mistakes
-
-
+def calculate_angle(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
     
+    radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
+    angle = np.abs(radians * 180.0 / np.pi)
+    
+    if angle > 180.0:
+        angle = 360 - angle
+    
+    return angle
+
+import cv2
+import mediapipe as mp
+import numpy as np
+import time
+
+mp_pose = mp.solutions.pose
+
+def calculate_angle(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
+    
+    radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
+    angle = np.abs(radians * 180.0 / np.pi)
+    
+    if angle > 180.0:
+        angle = 360 - angle
+    
+    return angle
+
+def squats(reps=5, total_sets=1, threshold_angle=140):
+    sets = 0
+    status = None
+    count = 0
+    side = "left"
+    over_extension = False
+    mistakes = 0
+    start_time = time.time()
+    
+    cap = cv2.VideoCapture(0)  # Change to the appropriate camera index if necessary
+    
+    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                print("Failed to capture frame")
+                break
+            
+            frame = cv2.flip(frame, 1)
+            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image.flags.writeable = False
+            
+            results = pose.process(image)
+            
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            
+            try:
+                # Extract landmarks for hips, knees, and heels
+                landmarks = results.pose_landmarks.landmark
+                left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
+                            landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,
+                             landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+                left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x,
+                              landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+
+                # Get coordinates for right side
+                right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
+                             landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+                right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,
+                              landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
+                right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x,
+                               landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
+
+                # We need torso-leg coordination
+
+                # Get coordinates for left shoulder-left leg
+                left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,  # used for break statement
+                                 landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
+                            landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,
+                             landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+
+                # Get coordinates for right shoulder-right leg
+                right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,  # used for break statement
+                                  landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+                right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
+                             landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+                right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,
+                              landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
+
+                # Calculate angle
+                angle_left = calculate_angle(left_hip, left_knee, left_ankle)
+                angle_right = calculate_angle(right_hip, right_knee, right_ankle)
+                angle_left_upper = calculate_angle(left_shoulder, left_hip, left_knee)
+                angle_right_upper = calculate_angle(right_shoulder, right_hip, right_knee)
+
+                # Squats counter logic
+                if (angle_left > 120 and angle_right > 120) and (angle_left_upper > 160 and angle_right_upper > 160):
+                    stage = "up"
+                    status = 'up'
+                elif (angle_left < 90 and angle_right < 90) and (
+                        angle_left_upper < 100 and angle_right_upper < 100) and stage == "up":
+                    stage = "down"
+                    count += 1
+                    status = 'down'
+
+                # Calculate angle between hips, knees, and heels
+                knee_angle = calculate_angle(left_hip, left_knee, left_ankle)
+                # Calculate proportion of current angle to threshold angle
+                proportion = max(0, min(1, knee_angle / threshold_angle))
+                # Calculate radius of filled circle based on proportion
+                filled_circle_radius = int(proportion * threshold_angle / 4)
+
+                # Draw hollow circle at knee with maximum radius
+                cv2.circle(image, tuple(np.multiply(left_knee, [640, 480]).astype(int)), int(threshold_angle / 4), (255, 255, 255), 2)
+
+                # Draw filled circle at knee with radius proportional to the angle
+                if int(threshold_angle / 4) - 5 < filled_circle_radius < int(threshold_angle / 4) + 5:
+                    cv2.circle(image, tuple(np.multiply(left_knee, [640, 480]).astype(int)), filled_circle_radius, (0, 255, 0), -1)
+                elif filled_circle_radius > int(threshold_angle / 4):
+                    cv2.circle(image, tuple(np.multiply(left_knee, [640, 480]).astype(int)), filled_circle_radius, (0, 0, 255), -1)
+                else:
+                    cv2.circle(image, tuple(np.multiply(left_knee, [640, 480]).astype(int)), filled_circle_radius, (255, 0, 0), -1)
+
+                if knee_angle >= threshold_angle + 20:
+                    over_extension = True
+                    cv2.putText(image, "Do not over extend!", (250, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                    if over_extension:
+                        mistakes += 1
+                        over_extension = False
+                    cv2.circle(image, tuple(np.multiply(left_knee, [640, 480]).astype(int)), int(knee_angle / 4), (0, 0, 255), -1)
+
+                if status == 'up':
+                    cv2.putText(image, "Go down!", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                elif status == 'down':
+                    cv2.putText(image, "Go up!", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+
+                circle_radius = int(knee_angle / 4)
+
+                cv2.putText(image, f"Count: {count}", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)   
+
+                if count < 2 and side == 'right':
+                    cv2.putText(image, "Set Complete! Time to switch sides!", (200, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+
+                if count == reps:
+                    sets += 1
+                    if sets == total_sets:
+                        cv2.putText(image, "Workout Complete!", (200, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                        elapsed_time = time.time() - start_time
+                        break
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                pass
+
+            cv2.imshow('Squats', image)
+
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
+        return 'completed', sets, reps, elapsed_time, mistakes
+
+squats()
 
