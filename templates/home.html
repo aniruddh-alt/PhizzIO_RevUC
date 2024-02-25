@@ -1,0 +1,82 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+
+<section class="jumbotron text-center border">
+    <div class="container">
+        <h1>Welcome to PhizzIO</h1>
+        <p class="lead">We are dedicated to providing you the best Physiotherapy experience.</p>
+        <a href="/chat" class="btn btn-primary btn-lg">Get Started</a>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="py-5">
+    <div class="container border rounded">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>About Us</h2>
+                <p>We are a team of ambitious students striving to provide you treatment you and your body deserve.</p>
+            </div>
+            <div class="col-md-6">
+                <!-- Add an image here -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center">Features</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="path-to-image.jpg" class="card-img-top" alt="Service 1">
+                    <div class="card-body">
+                        <h5 class="card-title">Service 1</h5>
+                        <p class="card-text">Description of Service 1</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="path-to-image.jpg" class="card-img-top" alt="Service 2">
+                    <div class="card-body">
+                        <h5 class="card-title">Service 2</h5>
+                        <p class="card-text">Description of Service 2</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="py-5">
+    <div class="container">
+        <h2 class="text-center">Contact Us</h2>
+        <p class="text-center">Fill out the form below to get in touch with us.</p>
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <!-- Add a contact form here -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-3 bg-dark text-light text-center">
+    <div class="container">
+        &copy; 2023 Physiotherapy Web Application. All rights reserved.
+    </div>
+</footer>
+
+<!-- Add the Bootstrap JS and jQuery links here (e.g., via CDN) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+
+
+{% endblock %}
