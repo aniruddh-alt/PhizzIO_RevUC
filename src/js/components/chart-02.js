@@ -5,12 +5,12 @@ const chart02 = () => {
   const chartTwoOptions = {
     series: [
       {
-        name: "Sales",
-        data: [44, 55, 41, 67, 22, 43, 65],
+        name: "Attended",
+        data: [44, 55, 41, 49, 22, 43, 65],
       },
       {
-        name: "Revenue",
-        data: [13, 23, 20, 8, 13, 27, 15],
+        name: "Missed",
+        data: [13, 23, 20, 19, 13, 27, 15],
       },
     ],
     colors: ["#3056D3", "#80CAEE"],
@@ -43,7 +43,7 @@ const chart02 = () => {
       bar: {
         horizontal: false,
         borderRadius: 0,
-        columnWidth: "25%",
+        columnWidth: "35%",
         borderRadiusApplication: "end",
         borderRadiusWhenStacked: "last",
       },
