@@ -1,0 +1,27 @@
+{% extends "_base.html" %}
+{% include 'header.html' %}
+{% block body %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="text-center">Assigned Patients</h1>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for patient in assigned_patients %}
+                            <a href="/phy/patient/{{patient[0]}}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>{{ patient[2] }}, {{ patient[1] }}</div>
+                                    <div><span class="badge bg-primary">ID: {{ patient[0] }}</span></div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

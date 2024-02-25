@@ -1,0 +1,115 @@
+{% extends "_base.html" %}
+{% include 'header.html' %}
+{% block body %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="text-center">Patient Details</h1>
+                </div>
+                <div class="card-body">
+                    <h2>{{ patient[2] }}, {{patient[1]}}</h2>
+                    <p><strong>Gender:</strong> {{ patient[3] }}</p>
+                    <p><strong>Address:</strong> {{ patient[4] }}</p>
+                    <p><strong>Contact:</strong> {{ patient[5] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Assigned Exercises</h2>
+                </div>
+                <div class="card-body">
+                    {% if exercises_assigned %}
+                        <div class="list-group">
+                            {% for exercise in exercises_assigned %}
+                                <div class="list-group-item">
+                                    <h5 class="mb-0">{{ exercise[3] }}</h5>
+                                    <p class="mb-1"><strong>Reps:</strong> {{ exercise[4] }}</p>
+                                    <p class="mb-1"><strong>Sets:</strong> {{ exercise[5] }}</p>
+                                    <p class="mb-0"><strong>Notes:</strong> {{ exercise[6] }}</p>
+                                    <p class="mb-0"><strong>Date Assigned:</strong> {{ exercise[7] }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center">No exercises assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Exercise Log</h2>
+                </div>
+                <div class="card-body">
+                    {% if log %}
+                        <div class="list-group">
+                            {% for exe in log %}
+                                <div class="list-group-item">
+                                    <h5 class="mb-0">{{ exe[7] }}</h5>
+                                    <p class="mb-1"><strong>Date:</strong> {{ exe[2] }}</p>
+                                    <p class="mb-1"><strong>Sets:</strong> {{ exe[3] }}</p>
+                                    <p class="mb-0"><strong>Reps:</strong> {{ exe[4] }}</p>
+                                    <p class="mb-0"><strong>Duration:</strong> {{ exe[5] }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center">No exercises assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Prescribe Exercise</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="exercise_name" class="form-label">Exercise Name</label>
+                            <select type="text" class="form-control" id="exercise_name" name="exercise_name" required>
+                                <option value="Squats">Squats</option>
+                                <option value="Heel Slides">Heel Slides</option>
+                                <option value="Knee Extensions">Knee Extensions</option>
+                                <option value="Arm Extensions">Arm Extensions</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reps" class="form-label">Reps</label>
+                            <input type="number" class="form-control" id="reps" name="reps" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sets" class="form-label">Sets</label>
+                            <input type="number" class="form-control" id="sets" name="sets" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="thresh_angle" class="form-label">Threshold Angle</label>
+                            <input type="number" class="form-control" id="thresh_angle" name="thresh_angle">
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Prescribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from werkzeug.utils import url_quote
-from flask import Flask, request, jsonify, session, render_template, redirect, url_for
+from flask import Flask, request, jsonify, session, render_template, redirect, url_for, Response
 from flask_session import Session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import psycopg2
@@ -28,6 +28,8 @@ import sqlite3
 import sendgrid
 from sendgrid.helpers.mail import Mail, Cc
 import base64
+from heel_slides import *
+from datetime import timedelta
 
 
 app = Flask(__name__)
@@ -102,7 +104,7 @@ def login():
 
         with connect_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT user_id, password_hash FROM users WHERE username = %s", (username,))
+                cur.execute("SELECT user_id, password_hash, role FROM users WHERE username = %s", (username,))
                 user = cur.fetchone()
 
                 if user and user[1] == hashlib.sha256(password.encode()).hexdigest():
@@ -110,18 +112,160 @@ def login():
                     user_obj = User(user[0])
                     # Login the user
                     login_user(user_obj)
-                    return redirect(url_for('home'))
+                    
+                    if session.get('user') is None:
+                        session['user'] = {}
+                    session['user']['id'] = user[0]
+                    session['user']['role'] = user[2]
+                    session['user']['username'] = username
+                        
+                    if user[2] == 'Physiotherapist':
+                        return redirect(url_for('physio'))
+                    elif user[2] == 'Patient':
+                        return redirect(url_for('patient_page'))
                 else:
                     flash('Invalid username or password', 'error')
 
     return render_template('login.html')
+
+
+@app.route('/physio')
+@login_required
+def physio():
+    # Check if the current user is a physiotherapist
+    if 'user' in session and session['user']['role'] == 'Physiotherapist':
+        # Retrieve patients assigned to this physiotherapist
+        patients = []
+        with connect_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM PATIENTS WHERE physio_id = %s", (str(session['user']['id']),))
+                patients = cur.fetchall()
+
+        return render_template('physio.html', assigned_patients=patients)
+    else:
+        # If the current user is not a physiotherapist, redirect to an appropriate page
+        flash('You are not authorized to access this page', 'error')
+        return redirect(url_for('login'))
+    
+from flask import render_template, request
+
+@app.route('/phy/patient/<patient_id>', methods=['GET', 'POST'])
+def patient_details(patient_id):
+    if request.method == 'POST':
+        # Retrieve form data
+        with connect_db() as conn:
+            with conn.cursor() as cur:
+                exercise_name = request.form.get('exercise_name')
+                reps = request.form.get('reps')
+                sets = request.form.get('sets')
+                notes = request.form.get('notes')
+                thresh_angle = request.form.get('thresh_angle')
+                cur.execute("INSERT INTO ASSIGN_EXERCISE (patient_id, physio_id, exercise_name, reps, sets, notes, assigned_date, threshold_angle) VALUES (%s, %s, %s, %s, %s, %s, CURRENT_DATE, %s)", (patient_id, session['user']['id'], exercise_name, reps, sets, notes, int(thresh_angle)))
+                conn.commit()  
+    # Retrieve patient details
+    patient = {}
+    log = {}
+    with connect_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM PATIENTS WHERE patient_id = %s", (patient_id,))
+            patient = cur.fetchone()
+            cur.execute("SELECT * FROM PATIENT_EXERCISE_LOG WHERE patient_id = %s", (str(patient_id),))
+            log = cur.fetchall()
+            cur.execute("SELECT * FROM ASSIGN_EXERCISE WHERE patient_id = %s", (patient_id,))
+            exercises_assigned = cur.fetchall()
+    
+    return render_template('patient_info.html', patient=patient, log=log, exercises_assigned=exercises_assigned)
+
+
+@app.route('/patient', methods=['GET'])
+def patient_page():
+    # Retrieve patient information
+    patient_info = {}
+
+    with connect_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT patient_id FROM patients WHERE user_id = %s", (str(session['user']['id']),))
+            patient_id = cur.fetchone()[0]
+            cur.execute("SELECT * FROM patients WHERE patient_id = %s", (patient_id,))
+            patient_info = cur.fetchone()
+
+    # Retrieve information about the patient's physiotherapist
+    physiotherapist_info = {}
+    with connect_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM physiotherapists WHERE physiotherapist_id = %s", (patient_info[7],))
+            physiotherapist_info = cur.fetchone()
+
+    # Retrieve assigned exercises for the patient
+    assigned_exercises = []
+    with connect_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM assign_exercise WHERE patient_id = %s", (patient_id,))
+            assigned_exercises = cur.fetchall()
+            
+    # exercise log:
+    log = []
+    with connect_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM PATIENT_EXERCISE_LOG WHERE patient_id = %s", (str(patient_id),))
+            log = cur.fetchall()
+
+    return render_template('patient.html', patient=patient_info, physiotherapist=physiotherapist_info, exercises=assigned_exercises,log=log)
+
+@app.route('/exercise/<exercise_name>/<patient_id>', methods=['POST', 'GET']) 
+def exercise_guide(exercise_name, patient_id):
+    if exercise_name == 'Heel Slides':
+        return redirect('/heel_slides/{}'.format(patient_id))
+    elif exercise_name == 'Knee Extensions':
+        return redirect(f'/knee_extensions/{patient_id}')
+    elif exercise_name == 'Squats':
+        return redirect('/squats/{}'.format(patient_id))
+    elif exercise_name == 'Arm Extensions':
+        return redirect('/arm_extensions/{}'.format(patient_id))
+    else:
+        return redirect('/patient')
+
+@app.route('/knee_extensions/<patient_id>', methods=['GET'])
+def knee_extensions_route(patient_id):
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        return "Error: Unable to open the camera."
+
+    completed, sets, reps, elapsed_time, mistakes = knee_extensions()
+    update_exercise_log(patient_id, 'Knee Extensions', sets, reps, elapsed_time)
+    cap.release()
+    return redirect(url_for('patient_page'))
+
+@app.route('/squats/<patient_id>', methods=['GET'])
+def squat_route(patient_id):
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        return "Error: Unable to open the camera."
+
+    completed, sets, reps, elapsed_time, mistakes = squats()
+    print(completed, sets, reps, elapsed_time, mistakes)
+    update_exercise_log(patient_id, 'Squats', sets, reps, elapsed_time)
+    
+    cap.release()
+
+    return redirect(url_for('patient_page'))
+
+def update_exercise_log(patient_id, exercise_name, sets, reps, elapsed_time):
+    duration = str(timedelta(seconds=elapsed_time))
+    with connect_db() as conn:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO PATIENT_EXERCISE_LOG (patient_id, exercise_id, sets, reps, duration, date) VALUES (%s, %s, %s, %s, %s, CURRENT_DATE)", (patient_id, exercise_name, sets, reps, duration))
+            conn.commit()
 
 # Logout route
 @app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
-    return jsonify({'message': 'Logout successful'}), 200
+    session.clear()  # Reset session
+    return redirect(url_for('login')) 
 
 # Example protected route
 @app.route('/protected', methods=['GET'])

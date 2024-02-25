@@ -1,0 +1,81 @@
+{% extends "_base.html" %}
+{% include 'header.html' %}
+{% block body %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="text-center">Patient Details</h1>
+                </div>
+                <div class="card-body">
+                    <h2>{{ patient[2] }}, {{ patient[1] }}</h2>
+                    <p><strong>Gender:</strong> {{ patient[3] }}</p>
+                    <p><strong>Address:</strong> {{ patient[4] }}</p>
+                    <p><strong>Contact:</strong> {{ patient[5] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Physiotherapist Information</h2>
+                </div>
+                <div class="card-body">
+                    <h3>{{ physiotherapist[2] }}, {{ physiotherapist[1] }}</h3>
+                    <p><strong>Contact:</strong> {{ physiotherapist[5] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Exercise Log</h2>
+                </div>
+                <div class="card-body">
+                    {% if log %}
+                        <div class="list-group">
+                            {% for exe in log %}
+                                <div class="list-group-item">
+                                    <h5 class="mb-0">{{ exe[7] }}</h5>
+                                    <p class="mb-1"><strong>Date:</strong> {{ exe[2] }}</p>
+                                    <p class="mb-1"><strong>Sets:</strong> {{ exe[3] }}</p>
+                                    <p class="mb-0"><strong>Reps:</strong> {{ exe[4] }}</p>
+                                    <p class="mb-0"><strong>Duration:</strong> {{ exe[5] }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center">No exercises assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Assigned Exercises</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% if exercises %}
+                            {% for exercise in exercises %}
+                                <a class="list-group-item" href="exercise/{{exercise[3]}}/{{exercise[1]}}">{{ exercise[3]}} - Reps: {{ exercise[4] }}, Sets: {{ exercise[5] }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item">No exercises assigned</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
