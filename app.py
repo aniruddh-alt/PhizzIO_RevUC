@@ -252,6 +252,35 @@ def squat_route(patient_id):
 
     return redirect(url_for('patient_page'))
 
+@app.route('/heel_slides/<patient_id>', methods=['GET'])
+def heel_slides_route(patient_id):
+    cap = cv2.VideoCapture(0)
+
+    if not cap.isOpened():
+        return "Error: Unable to open the camera."
+
+    completed, sets, reps, elapsed_time, mistakes = heel_slides()
+    print(completed, sets, reps, elapsed_time, mistakes)
+    update_exercise_log(patient_id, 'Heel Slides', sets, reps, elapsed_time)
+    
+    cap.release()
+
+    return redirect(url_for('patient_page'))
+
+@app.route('/arm_extensions/<patient_id>', methods=['GET'])
+def arm_extensions_route(patient_id):
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        return "Error: Unable to open the camera."
+
+    completed, sets, reps, elapsed_time = arm_extensions()
+    print(completed, sets, reps, elapsed_time)
+    update_exercise_log(patient_id, 'Arm Extensions', sets, reps, elapsed_time)
+    
+    cap.release()
+
+    return redirect(url_for('patient_page'))
+
 def update_exercise_log(patient_id, exercise_name, sets, reps, elapsed_time):
     duration = str(timedelta(seconds=elapsed_time))
     with connect_db() as conn:

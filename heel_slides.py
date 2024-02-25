@@ -23,12 +23,13 @@ def calculate_angle(v1, v0, v2):
 
 
 
-def arm_extensions(reps=5,total_sets=1,threshold_angle=120):
+def arm_extensions(reps=5, total_sets=1, threshold_angle=120):
     sets = 0
     status = None
     count = 0
     side = "left"
     start_time = time.time()
+    elapsed_time = 0  # Initialize elapsed_time outside the try block
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             ret, frame = cap.read()
@@ -149,7 +150,7 @@ def arm_extensions(reps=5,total_sets=1,threshold_angle=120):
         # Release video capture and close all windows
         cap.release()
         cv2.destroyAllWindows()
-        return 'completed', sets, reps, elapsed_time
+        return 'completed', sets, reps, elapsed_time  # Return elapsed_time outside the loop
     
     
 def heel_slides(reps=5,total_sets=1,threshold_angle=100):
@@ -194,7 +195,6 @@ def heel_slides(reps=5,total_sets=1,threshold_angle=100):
                     if knee_angle < 100:
                         start = True
                     
-
                 elif start:
                     # Draw semi-circle at elbow
                     if side == "left":
@@ -539,25 +539,26 @@ def squats(reps=5, total_sets=1, threshold_angle=140):
     over_extension = False
     mistakes = 0
     start_time = time.time()
-    
+    elapsed_time = 0  # Initialize elapsed_time with a default value
+
     cap = cv2.VideoCapture(0)  # Change to the appropriate camera index if necessary
-    
+
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 print("Failed to capture frame")
                 break
-            
+
             frame = cv2.flip(frame, 1)
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image.flags.writeable = False
-            
+
             results = pose.process(image)
-            
+
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            
+
             try:
                 # Extract landmarks for hips, knees, and heels
                 landmarks = results.pose_landmarks.landmark
