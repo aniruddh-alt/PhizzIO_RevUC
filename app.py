@@ -34,11 +34,8 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Configure the secret key for session management
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 # Configure the database connection details
-DATABASE_URL = 'postgresql://postgres:l1RFqY5YNx1ZqtUM@org-phizzio-inst-phizzio-standard.data-1.use1.tembo.io:5432/postgres'
 
 # Initialize Flask-Session
 app.config['SESSION_TYPE'] = 'filesystem'
